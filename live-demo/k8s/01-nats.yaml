@@ -32,14 +32,7 @@ spec:
     spec:
       containers:
       - name: gnatsd
-        image: nats:0.8.0
-        command:
-        - /gnatsd
-        - -p
-        - "4222"
-        - -m
-        - "8222"
-        - -DV
+        image: nats:0.9.4
         ports:
         - containerPort: 4222 
           name: client

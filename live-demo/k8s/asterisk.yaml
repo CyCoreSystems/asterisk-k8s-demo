@@ -8,7 +8,7 @@ spec:
   ports:
     - name: sip
       protocol: UDP
-      targetPort: 5060
+      port: 5060
 
 ---
 
@@ -36,6 +36,9 @@ spec:
               mountPath: /etc/asterisk
         - name: config
           image: cycoresystems/astricon-2016-asteriskconfig
+          volumeMounts:
+            - name: config
+              mountPath: /etc/asterisk
         - name: natsgw
           image: cycoresystems/astricon-2016-natsgw
           env:

@@ -42,6 +42,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /data/kamailio
+        - name: rtpproxy
+          image: cycoresystems/astricon-2016-rtpproxy
         - name: dispatchers
           image: cycoresystems/dispatchers
           command:

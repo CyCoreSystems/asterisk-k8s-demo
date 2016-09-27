@@ -13,7 +13,7 @@ func init() {
 var ProxiesTemplate = `
 [proxies]
 type=endpoint
-transport=transport-ec2
+transport=transport-udp
 context=abn
 disallow=all
 allow=ulaw

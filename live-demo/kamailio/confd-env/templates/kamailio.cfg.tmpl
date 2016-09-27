@@ -1,8 +1,5 @@
 #!KAMAILIO
 
-########## -- Global inclusions -- ##########
-include_file "config_params.k"
-
 ########## -- Global parameters -- ##########
 
 #!define PUBLIC_IP "{{getv "/public/ipv4"}}"
@@ -292,7 +289,7 @@ user="root"
 # User agent header to send in scenarios where Kamailio behaves as UAC
 # or UAS.
 
-user_agent_header="NextAlarm SIP Load Balancer"
+user_agent_header="Astricon SIP Load Balancer"
 
 ##
 # Working directory.
@@ -307,15 +304,6 @@ workdir="/etc/kamailio"
 #   # define WITH_FEATURE
 # to
 #   #!define WITH_FEATURE
-
-##
-# Use a database backend module of some description.   Specifics are in
-# config_params.k
-
-#!define WITH_DB
-
-#!define WITH_REGISTRAR
-#!define WITH_DIGEST_AUTH
 
 
 ########## -- Module-related inclusions -- ##########
@@ -341,18 +329,7 @@ include_file "routes/sl_reply.k"
 # -- INCLUDE - Basic INVITE directional resolver route -- #
 include_file "routes/invite_resolver.k"
 include_file "routes/invite_postroute.k"
-include_file "routes/invite_untrusted.k"
-include_file "routes/proxy_auth_outbound.k"
 
 # -- INCLUDE - Dispatcher rollover -- #
-include_file "routes/dispatcher_initial.k"
 include_file "routes/dispatcher_rollover.k"
 
-# -- INCLUDE - Registrar -- #
-include_file "routes/register_handler.k"
-include_file "routes/registrar_lookup.k"
-
-# -- INCLUDE - NextAlarm -- #
-include_file "routes/nextalarm_registry.k"
-include_file "routes/nextalarm_abnpassword.k"
-include_file "routes/nextalarm_trusted.k"

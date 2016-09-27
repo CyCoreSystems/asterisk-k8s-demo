@@ -6,7 +6,7 @@ set -e
 
 # Default values
 : ${PID_FILE:="/var/run/kamailio.pid"}
-: ${KAMAILIO_ARGS:="-DD -f /etc/kamailio/kamailio.cfg -P ${PID_FILE}"}
+: ${KAMAILIO_ARGS:="-DD -E -f /etc/kamailio/kamailio.cfg -P ${PID_FILE}"}
 
 # confd requires that these variables actually be exported
 export PID_FILE

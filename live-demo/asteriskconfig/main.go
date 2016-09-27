@@ -126,10 +126,10 @@ func notify() error {
 		URL: "nats://nats:4222",
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to connect to NATS")
 	}
 
-	return n.Asterisk.ReloadModule("pjsip.so")
+	return errors.Wrap(n.Asterisk.ReloadModule("res_pjsip.so"), "failed to reload PJSIP")
 }
 
 // update updates the list of proxies
