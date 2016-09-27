@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats
+  labels:
+    component: nats
+spec:
+  selector:
+    component: nats
+  ports:
+  - name: client
+    port: 4222
+  - name: cluster
+    port: 6222
+  - name: monitor
+    port: 8222
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nats
+  labels:
+    component: nats
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: nats
+    spec:
+      containers:
+      - name: gnatsd
+        image: nats:0.8.0
+        command:
+        - /gnatsd
+        - -p
+        - "4222"
+        - -m
+        - "8222"
+        - -DV
+        ports:
+        - containerPort: 4222 
+          name: client
+        - containerPort: 6222 
+          name: cluster
+        - containerPort: 8222 
+          name: monitor
+        livenessProbe:
+          tcpSocket:
+            port: 8222
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: 8222
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: "0.1"

@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kamailio
+  labels:
+    component: kamailio
+spec:
+  ports:
+    - name: sip
+      protocol: UDP
+      port: 5060
+      targetPort: 5060
+  selector:
+    component: kamailio
+
+---
+
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kamailio
+  labels:
+    component: kamailio
+spec:
+  selector:
+    matchLabels:
+      component: kamailio
+  template:
+    metadata:
+      name: kamailio
+      labels:
+        component: kamailio
+    spec:
+      nodeSelector:
+        component: kamailio
+      hostNetwork: true
+      volumes:
+        - name: config
+      containers:
+        - name: kamailio
+          image: cycoresystems/astricon-2016-kamailio
+          volumeMounts:
+            - name: config
+              mountPath: /data/kamailio
+        - name: dispatchers
+          image: cycoresystems/dispatchers
+          command:
+            - /app
+            - "-set"
+            - default:astrisk=1
+          volumeMounts:
+            - name: config
+              mountPath: /data/kamailio

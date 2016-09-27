@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: asterisk
+spec:
+  selector:
+    component: asterisk
+  ports:
+    - name: sip
+      protocol: UDP
+      targetPort: 5060
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: asterisk
+  labels:
+    component: asterisk
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: asterisk
+    spec:
+      volumes:
+        - name: config
+          emptyDir: {}
+      containers:
+        - name: asterisk
+          image: cycoresystems/astricon-2016-asterisk
+          volumeMounts:
+            - name: config
+              mountPath: /etc/asterisk
+        - name: config
+          image: cycoresystems/astricon-2016-asteriskconfig
+        - name: natsgw
+          image: cycoresystems/astricon-2016-natsgw
+          env:
+            - name: NATS_URI
+              value: nats://nats:4222
+            - name: ARI_APPLICATION
+              value: demo
+            - name: ARI_USERNAME
+              value: admin
+            - name: ARI_PASSWORD
+              value: admin
