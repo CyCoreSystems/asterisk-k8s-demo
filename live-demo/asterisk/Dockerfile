@@ -17,7 +17,7 @@ RUN curl -o /tmp/asterisk.tar.gz http://downloads.asterisk.org/pub/telephony/ast
    cd /tmp/asterisk-${ASTERISK_VER} && \
    ./configure --with-pjproject-bundled --with-spandsp && \
    make menuselect.makeopts && \
-   menuselect/menuselect --disable BUILD_NATIVE --disable chan_sip menuselect.makeopts && \
+   menuselect/menuselect --enable EXTRA-SOUNDS-EN-GSM --disable BUILD_NATIVE --disable chan_sip menuselect.makeopts && \
    make && \
    make install && \
    rm -Rf /tmp/*
