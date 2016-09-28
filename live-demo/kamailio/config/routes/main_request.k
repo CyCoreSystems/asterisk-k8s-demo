@@ -11,12 +11,14 @@ route {
 		exit;
 	}
 
+
 	### -- Sequential request and ACK handling -- ###
 
 	if(has_totag()) {
 	
 		if(loose_route()) {
 			if(is_method("BYE")) {
+            rtpproxy_manage();
 				xlog("L_INFO", 
 				     "[R-MAIN:$ci] -> "
 				     "BYE (hangup) received from $si:$sp\n");
@@ -31,8 +33,10 @@ route {
 			}	
 
 
-			if(!t_relay()) 
+			if(!t_relay()) {
+            rtpproxy_manage();
 				sl_reply_error();
+         }
 	
 			exit;
 		} 
@@ -40,6 +44,7 @@ route {
 		else {
 			# Request is not loose-routed, but has a To-tag;
 			if(is_method("ACK")) {
+            rtpproxy_manage();
 				if(t_check_trans()) 
 					t_relay();
 
@@ -56,6 +61,8 @@ route {
 	### -- Stateful CANCEL handling -- ###
 
 	if(is_method("CANCEL")) {
+
+      rtpproxy_manage();
 
 		xlog("L_INFO", 
 			"[R-MAIN:$ci] CANCEL received from $si (RURI=$ru)\n");

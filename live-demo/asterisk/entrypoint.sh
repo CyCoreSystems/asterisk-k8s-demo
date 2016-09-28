@@ -2,7 +2,7 @@
 set -e
 
 # Default values
-: ${ASTERISK_ARGS:="-fp"}
+: ${ASTERISK_ARGS:="-fpvvvvvv"}
 : ${PUBLIC_IPV4:="$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"}
 
 # If we were given arguments, run them instead

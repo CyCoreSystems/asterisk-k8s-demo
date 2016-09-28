@@ -16,6 +16,7 @@ modparam("dispatcher", "flags", 2)
 modparam("dispatcher", "dst_avp", "$avp(s:d_dst_set)")
 modparam("dispatcher", "grp_avp", "$avp(s:d_grp_set)")
 modparam("dispatcher", "cnt_avp", "$avp(s:d_cnt_avp)")
+modparam("dispatcher", "sock_avp", "$avp(dssocket)")
 
 # Probe dispatchers
 # Mode 0: only probe gateways in the probing state

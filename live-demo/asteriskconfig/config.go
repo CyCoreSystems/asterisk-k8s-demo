@@ -14,7 +14,7 @@ var ProxiesTemplate = `
 [proxies]
 type=endpoint
 transport=transport-udp
-context=abn
+context=default
 disallow=all
 allow=ulaw
 aors=proxies
@@ -37,6 +37,9 @@ match={{.}}
 [acl]
 type=acl
 deny=0.0.0.0/0.0.0.0
+permit=10.0.0.0/255.255.0.0
+permit=10.2.0.0/255.255.0.0
+permit=10.3.0.0/255.255.0.0
 {{range .}}
 permit={{.}}
 {{end}}

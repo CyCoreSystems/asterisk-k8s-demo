@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    component: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: app
+    spec:
+      containers:
+        - name: app
+          image: cycoresystems/astricon-2016-app
