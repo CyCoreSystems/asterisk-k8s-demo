@@ -19,7 +19,8 @@ type State struct {
 
 	h *ari.ChannelHandle
 
-	digit string
+	component string
+	digit     string
 
 	tries int
 }
@@ -66,7 +67,36 @@ func menu(s *State) stateFn {
 	}
 	s.tries++
 
-	ret, err := prompt.Prompt(s.ctx, s.h, nil, "sound:hello", "sound:please-enter-your", "sound:number")
+	ret, err := prompt.Prompt(s.ctx, s.h, nil,
+		"sound:hello",
+		"sound:press-1", "sound:for", "sound:letters/asterisk",
+		"sound:press-2", "for", "sound:letters/a", "sound:letters/r", "sound:letters/i",
+	)
+	if err != nil {
+		log.Println("Failed to play prompt", err)
+		return invalid
+	}
+
+	switch ret.Status {
+	case prompt.Complete:
+		switch ret.Data {
+		case "1":
+			s.component = "asterisk"
+		case "2":
+			s.component = "app"
+		default:
+			return menu
+		}
+		return menuScale
+	default:
+		log.Println("Prompt status not complete", ret.Status)
+		return menu
+	}
+}
+
+func menuScale(s *State) stateFn {
+	ret, err := prompt.Prompt(s.ctx, s.h, nil,
+		"sound:please-enter-your", "sound:number")
 	if err != nil {
 		log.Println("Failed to play prompt", err)
 		return invalid
@@ -76,11 +106,9 @@ func menu(s *State) stateFn {
 	case prompt.Complete:
 		s.digit = ret.Data
 		return reply
-	case prompt.Timeout:
-		return menu
 	default:
 		log.Println("Prompt status not complete", ret.Status)
-		return invalid
+		return menuScale
 	}
 }
 
@@ -101,12 +129,12 @@ func scale(s *State) stateFn {
 	}
 	n := int32(ni)
 
-	err = deployment.Scale(&n)
+	err = deployment.Scale(s.component, &n)
 	if err != nil {
-		log.Println("Failed to scale asterisk", err)
+		log.Println("Failed to scale ", s.component, err)
 		return nil
 	}
-	log.Println("Scaled asterisk to ", n)
+	log.Println("Scaled ", s.component, "to ", n)
 	return nil
 }
 
