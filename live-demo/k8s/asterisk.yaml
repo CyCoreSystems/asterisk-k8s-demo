@@ -30,17 +30,17 @@ spec:
           emptyDir: {}
       containers:
         - name: asterisk
-          image: cycoresystems/astricon-2016-asterisk
+          image: cycoresystems/astricon-2016-asterisk:gce
           volumeMounts:
             - name: config
               mountPath: /etc/asterisk
         - name: config
-          image: cycoresystems/astricon-2016-asteriskconfig
+          image: cycoresystems/astricon-2016-asteriskconfig:gce
           volumeMounts:
             - name: config
               mountPath: /etc/asterisk
         - name: natsgw
-          image: cycoresystems/astricon-2016-natsgw
+          image: cycoresystems/astricon-2016-natsgw:gce
           env:
             - name: NATS_URI
               value: nats://nats:4222

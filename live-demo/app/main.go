@@ -8,7 +8,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/CyCoreSystems/ari"
-	"github.com/CyCoreSystems/ari/client/nc"
+	"github.com/CyCoreSystems/ari-proxy/client"
 )
 
 func main() {
@@ -54,12 +54,12 @@ func listen(cl *ari.Client, handler func(cl *ari.Client, h *ari.ChannelHandle)) 
 
 func connect(ctx context.Context) (cl *ari.Client, err error) {
 
-	opts := nc.Options{
+	opts := client.Options{
 		URL: "nats://nats:4222",
 	}
 
 	log.Println("Connecting")
 
-	cl, err = nc.New(opts)
+	cl, err = client.New(opts)
 	return
 }

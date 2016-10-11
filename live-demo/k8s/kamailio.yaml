@@ -32,18 +32,18 @@ spec:
         component: kamailio
     spec:
       nodeSelector:
-        component: kamailio
+        cloud.google.com/gke-nodepool: pool-kamailio
       hostNetwork: true
       volumes:
         - name: config
       containers:
         - name: kamailio
-          image: cycoresystems/astricon-2016-kamailio
+          image: cycoresystems/astricon-2016-kamailio:gce
           volumeMounts:
             - name: config
               mountPath: /data/kamailio
         - name: rtpproxy
-          image: cycoresystems/astricon-2016-rtpproxy
+          image: cycoresystems/astricon-2016-rtpproxy:gce
         - name: dispatchers
           image: cycoresystems/dispatchers
           command:

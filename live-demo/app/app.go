@@ -10,7 +10,7 @@ import (
 	"github.com/CyCoreSystems/ari"
 	"github.com/CyCoreSystems/ari/ext/audio"
 	"github.com/CyCoreSystems/ari/ext/prompt"
-	"github.com/CyCoreSystems/dispatchers/deployment"
+	"github.com/CyCoreSystems/dispatchers/pkg/deployment"
 )
 
 // State is the structure for storing application execution data
@@ -101,7 +101,7 @@ func scale(s *State) stateFn {
 	}
 	n := int32(ni)
 
-	err = deployment.Scale(&n)
+	err = deployment.Scale("asterisk", &n)
 	if err != nil {
 		log.Println("Failed to scale asterisk", err)
 		return nil

@@ -13,4 +13,4 @@ spec:
     spec:
       containers:
         - name: app
-          image: cycoresystems/astricon-2016-app
+          image: cycoresystems/astricon-2016-app:gce

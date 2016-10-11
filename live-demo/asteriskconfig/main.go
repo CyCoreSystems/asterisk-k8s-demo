@@ -8,7 +8,7 @@ import (
 
 	"k8s.io/client-go/1.4/pkg/watch"
 
-	"github.com/CyCoreSystems/ari/client/nc"
+	"github.com/CyCoreSystems/ari-proxy/client"
 	"github.com/CyCoreSystems/dispatchers/pkg/endpoints"
 	"github.com/pkg/errors"
 )
@@ -122,7 +122,7 @@ func export() error {
 
 // notify signals to kamailio to reload its dispatcher list
 func notify() error {
-	n, err := nc.New(nc.Options{
+	n, err := client.New(client.Options{
 		URL: "nats://nats:4222",
 	})
 	if err != nil {

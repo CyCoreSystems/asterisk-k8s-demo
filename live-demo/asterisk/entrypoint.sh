@@ -3,7 +3,8 @@ set -e
 
 # Default values
 : ${ASTERISK_ARGS:="-fpvvvvvv"}
-: ${PUBLIC_IPV4:="$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"}
+#: ${PUBLIC_IPV4:="$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"}
+: ${PUBLIC_IPV4:="$(curl -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)"}
 
 # If we were given arguments, run them instead
 if [ $# -gt 0 ]; then

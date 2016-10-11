@@ -16,9 +16,13 @@ mkdir -p /data/kamailio
 touch /data/kamailio/dispatcher.list
 
 # Obtain private and public IPs
-export PRIVATE_IPV4=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-export PUBLIC_IPV4=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-export PUBLIC_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
+#export PRIVATE_IPV4=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+#export PUBLIC_IPV4=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+#export PUBLIC_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
+export PRIVATE_IPV4=$(curl -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip)
+export PUBLIC_IPV4=$(curl -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
+export PUBLIC_HOSTNAME=$(curl -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/hostname)
+
 
 # Build run-time configuration
 confd -onetime -backend env -confdir=/etc/confd-env -config-file=/etc/confd-env/conf.d/kamailio.toml
