@@ -9,6 +9,8 @@ import (
 
 	"github.com/CyCoreSystems/ari"
 	"github.com/CyCoreSystems/ari-proxy/client"
+	"github.com/CyCoreSystems/ari-proxy/session"
+	"github.com/nats-io/nats"
 )
 
 func main() {
@@ -27,9 +29,9 @@ func run() int {
 
 	// connect
 
-	cl, err := connect(ctx)
+	nc, err := nats.Connect("nats://nats:4222")
 	if err != nil {
-		log.Println("Failed to build nc ARI client", "error", err)
+		log.Println("Failed to connect to NATS", "error", err)
 		return -1
 	}
 
@@ -37,29 +39,17 @@ func run() int {
 
 	log.Println("Starting listener app")
 
-	listen(cl, app)
+	err = client.Listen(ctx, nc, "demo", handler)
+	if err != nil {
+		log.Println("Unable to start ari-proxy client listener:", err)
+		return -2
+	}
 
 	return 0
 }
 
-func listen(cl *ari.Client, handler func(cl *ari.Client, h *ari.ChannelHandle)) {
-	sub := cl.Bus.Subscribe("StasisStart")
-
-	for e := range sub.Events() {
-		log.Println("Got stasis start")
-		stasisStartEvent := e.(*ari.StasisStart)
-		go handler(cl, cl.Channel.Get(stasisStartEvent.Channel.ID))
-	}
-}
-
-func connect(ctx context.Context) (cl *ari.Client, err error) {
-
-	opts := client.Options{
-		URL: "nats://nats:4222",
-	}
-
-	log.Println("Connecting")
-
-	cl, err = client.New(opts)
-	return
+func handler(cl *ari.Client, d *session.Dialog) {
+	log.Println("Starting dialog handler", d.ID)
+	h := cl.Channel.Get(d.ChannelID)
+	app(cl, h)
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/CyCoreSystems/ari-proxy/client"
 	"github.com/CyCoreSystems/dispatchers/pkg/endpoints"
+	"github.com/nats-io/nats"
 	"github.com/pkg/errors"
 )
 
@@ -122,11 +123,14 @@ func export() error {
 
 // notify signals to kamailio to reload its dispatcher list
 func notify() error {
-	n, err := client.New(client.Options{
-		URL: "nats://nats:4222",
-	})
+	nc, err := nats.Connect("nats://nats:4222")
 	if err != nil {
-		return errors.Wrap(err, "failed to connect to NATS")
+		return errors.Wrap(err, "Failed to connect to NATS")
+	}
+
+	n, err := client.New(nc, "demo", nil, client.Options{})
+	if err != nil {
+		return errors.Wrap(err, "failed to create ARI client")
 	}
 
 	return errors.Wrap(n.Asterisk.ReloadModule("res_pjsip.so"), "failed to reload PJSIP")
