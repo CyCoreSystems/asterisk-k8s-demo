@@ -6,7 +6,7 @@ loadpath "/usr/local/lib64/kamailio/modules:/usr/local/lib64/kamailio/modules_k:
 
 # Load the modules.
 
-loadmodule "mi_fifo"
+#loadmodule "mi_fifo"
 loadmodule "ctl"
 loadmodule "pv"
 loadmodule "tm"
@@ -40,7 +40,7 @@ loadmodule "utils"
 
 include_file "module_cfg/xlog.k"
 include_file "module_cfg/maxfwd.k"
-include_file "module_cfg/mi_fifo.k"
+#include_file "module_cfg/mi_fifo.k"
 include_file "module_cfg/ctl.k"
 include_file "module_cfg/pv.k"
 include_file "module_cfg/rr.k"
