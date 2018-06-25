@@ -1,0 +1,31 @@
+[proxies]
+type=endpoint
+transport=k8s-internal-ipv4-external-media
+context=inbound
+disallow=all
+allow=ulaw
+aors=proxies
+ice_support=no
+rtp_symmetric=yes
+
+[proxies]
+type=aor
+{{range .EndpointIPs "kamailio"}}
+contact=sip:{{.}}:5060
+{{end}}
+
+[proxies]
+type=identify
+endpoint=proxies
+{{range .EndpointIPs "kamailio"}}
+match={{.}}
+{{end}}
+
+[acl]
+type=acl
+deny=0.0.0.0/0.0.0.0
+permit=10.0.0.0/255.0.0.0
+{{range .EndpointIPs "kamailio"}}
+permit={{.}}
+{{end}}
+`
