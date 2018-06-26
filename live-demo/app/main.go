@@ -1,55 +1,49 @@
 package main
 
 import (
+	"context"
 	"log"
-	"os"
 	"time"
-
-	"golang.org/x/net/context"
 
 	"github.com/CyCoreSystems/ari"
 	"github.com/CyCoreSystems/ari-proxy/client"
-	"github.com/CyCoreSystems/ari-proxy/session"
-	"github.com/nats-io/nats"
 )
 
+const ariApp = "test"
+
 func main() {
-
-	<-time.After(1 * time.Second)
-
-	if i := run(); i != 0 {
-		os.Exit(i)
-	}
-}
-
-func run() int {
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// connect
-
-	nc, err := nats.Connect("nats://nats:4222")
+	log.Println("connecting to ARI")
+	cl, err := client.New(ctx, client.WithApplication(ariApp))
 	if err != nil {
-		log.Println("Failed to connect to NATS", "error", err)
-		return -1
+		log.Println("failed to build ARI client", "error", err)
+		return
 	}
 
-	// setup app
-
-	log.Println("Starting listener app")
-
-	err = client.Listen(ctx, nc, "demo", handler)
+	log.Println("starting listener")
+	err = client.Listen(ctx, cl, appStart)
 	if err != nil {
-		log.Println("Unable to start ari-proxy client listener:", err)
-		return -2
+		log.Println("failed to listen for new calls")
 	}
+	<-ctx.Done()
 
-	return 0
+	return
 }
 
-func handler(cl *ari.Client, d *session.Dialog) {
-	log.Println("Starting dialog handler", d.ID)
-	h := cl.Channel.Get(d.ChannelID)
-	app(cl, h)
+func appStart(h *ari.ChannelHandle, startEvent *ari.StasisStart) {
+	log.Println("running app:", "channel", h.Key().ID)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Minute))
+	defer cancel()
+
+	if err := app(ctx, h); err != nil {
+		log.Println("app execution failed:", err.Error())
+	}
+
+	h.Hangup()
+	log.Println("channel hung up")
+	return
 }

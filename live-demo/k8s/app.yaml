@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: app
@@ -13,4 +13,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: cycoresystems/astricon-2016-app:gce
+          image: cycoresystems/scaling-ari-app
+          env:
+            - name: NATS_URI
+              value: nats://nats:4222

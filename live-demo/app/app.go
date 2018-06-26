@@ -1,45 +1,39 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/CyCoreSystems/ari"
-	"github.com/CyCoreSystems/ari/ext/audio"
-	"github.com/CyCoreSystems/ari/ext/prompt"
-	"github.com/CyCoreSystems/dispatchers/pkg/deployment"
+	"github.com/CyCoreSystems/ari/ext/play"
+	"github.com/ericchiang/k8s"
+	"github.com/ericchiang/k8s/apis/apps/v1"
+	"github.com/pkg/errors"
 )
 
 // State is the structure for storing application execution data
 type State struct {
-	ctx context.Context
-
 	h *ari.ChannelHandle
-
-	digit string
 
 	tries int
 }
 
-type stateFn func(*State) stateFn
+type stateFn func(context.Context) (stateFn, error)
 
-func app(cl *ari.Client, h *ari.ChannelHandle) {
-	log.Println("Running channel app")
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Minute))
+func app(ctx context.Context, h *ari.ChannelHandle) error {
+	log.Println("running channel app")
 
 	// Always quit on hangup
 	go func() {
 		sub := h.Subscribe(ari.Events.ChannelDestroyed)
+		defer sub.Cancel()
 		select {
 		case <-sub.Events():
-			cancel()
 		case <-ctx.Done():
 		}
-		sub.Cancel()
 	}()
 
 	h.Answer()
@@ -47,71 +41,88 @@ func app(cl *ari.Client, h *ari.ChannelHandle) {
 
 	// Create the state struct
 	s := &State{
-		ctx: ctx,
-		h:   h,
+		h: h,
 	}
 
 	// Run state machine
-	for next := menu; next != nil; {
-		next = next(s)
+	var err error
+	for next := s.menu; next != nil; {
+		if next, err = next(ctx); err != nil {
+			if iErr := invalid(ctx, h); iErr != nil {
+				log.Println("failed to play invalid message:", iErr)
+			}
+
+			return err
+		}
 	}
-
-	h.Hangup()
-
+	return nil
 }
 
-func menu(s *State) stateFn {
+func (s *State) menu(ctx context.Context) (stateFn, error) {
 	if s.tries > 3 {
-		return invalid
+		return nil, errors.New("too many retries")
 	}
 	s.tries++
 
-	ret, err := prompt.Prompt(s.ctx, s.h, nil, "sound:hello", "sound:please-enter-your", "sound:number")
+	ret, err := play.Prompt(ctx, s.h, nil, play.URI("sound:hello", "sound:please-enter-your", "sound:number")).Result()
 	if err != nil {
-		log.Println("Failed to play prompt", err)
-		return invalid
+		return nil, errors.Wrap(err, "failed to play prompt")
 	}
 
-	switch ret.Status {
-	case prompt.Complete:
-		s.digit = ret.Data
-		return reply
-	case prompt.Timeout:
-		return menu
+	switch ret.MatchResult {
+	case play.Complete:
+	case play.Incomplete:
+		return s.menu, nil
 	default:
-		log.Println("Prompt status not complete", ret.Status)
-		return invalid
+		return nil, errors.New("invalid DTMF entry")
+	}
+
+	size, err := strconv.Atoi(ret.DTMF)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert DTMF entry to an integer")
+	}
+	return s.reply(size), nil
+}
+
+func (s *State) reply(size int) func(context.Context) (stateFn, error) {
+	return func(ctx context.Context) (stateFn, error) {
+		log.Println("announcing new size:", size)
+		err := play.Play(ctx, s.h, play.URI("sound:you-entered", fmt.Sprintf("digits:%d", size))).Err()
+		return s.scale(size), err
 	}
 }
 
-func reply(s *State) stateFn {
-	log.Println("Sending reply", s.digit)
-	q := audio.NewQueue()
-	q.Add("sound:you-entered")
-	q.Add("digits:" + s.digit)
-	_, _ = q.Play(s.ctx, s.h, nil)
-	return scale
+func (s *State) scale(size int) func(context.Context) (stateFn, error) {
+	return func(ctx context.Context) (stateFn, error) {
+
+		if err := scaleAsterisk(ctx, int32(size)); err != nil {
+			return nil, errors.Wrap(err, "failed to scale asterisk deployment")
+		}
+		log.Println("scaled asterisk to ", size, "replicas")
+		return nil, nil
+	}
 }
 
-func scale(s *State) stateFn {
-	ni, err := strconv.Atoi(s.digit)
+func invalid(ctx context.Context, h *ari.ChannelHandle) error {
+	return play.Play(ctx, h, play.URI("sound:an-error-has-occurred")).Err()
+}
+
+func scaleAsterisk(ctx context.Context, size int32) error {
+	k, err := k8s.NewInClusterClient()
 	if err != nil {
-		log.Println("Failed to parse digit as number", err)
+		return errors.Wrap(err, "failed to get kubernetes client")
+	}
+
+	d := new(v1.Deployment)
+	if err = k.Get(ctx, "voip", "asterisk", d); err != nil {
+		return errors.Wrap(err, "failed to retrieve current asterisk deployment")
+	}
+
+	current := d.GetSpec().GetReplicas()
+	if current == size {
 		return nil
 	}
-	n := int32(ni)
 
-	err = deployment.Scale("asterisk", &n)
-	if err != nil {
-		log.Println("Failed to scale asterisk", err)
-		return nil
-	}
-	log.Println("Scaled asterisk to ", n)
-	return nil
-}
-
-func invalid(s *State) stateFn {
-	log.Println("Playing error message")
-	audio.Play(s.ctx, s.h, "sound:an-error-has-occurred")
-	return nil
+	d.GetSpec().Replicas = &size
+	return k.Update(ctx, d)
 }
