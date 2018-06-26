@@ -1,8 +1,0 @@
-[template]
-src = "kamailio.cfg.tmpl"
-dest = "/etc/kamailio/kamailio.cfg"
-keys = [
-   "/private/ipv4",
-   "/public/ipv4",
-   "/public/hostname",
-]

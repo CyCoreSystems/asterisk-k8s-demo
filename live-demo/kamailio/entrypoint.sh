@@ -16,24 +16,22 @@ mkdir -p /data/kamailio
 touch /data/kamailio/dispatcher.list
 
 # Obtain private and public IPs
+: ${CLOUD=""} # One of aws, azure, do, gcp, or empty
 
-# AWS
-#export PRIVATE_IPV4=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-#export PUBLIC_IPV4=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-#export PUBLIC_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
+: ${PRIVATE_IPV4="(netdiscover -field privatev4 -provider ${CLOUD})"}
+: ${PUBLIC_IPV4="(netdiscover -field publicv4 -provider ${CLOUD})"}
+: ${PUBLIC_HOSTNAME="(netdiscover -field hostname -provider ${CLOUD})"}
 
-# GCP
-: ${PRIVATE_IPV4="(curl -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip)"}
-: ${PUBLIC_IPV4="(curl -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)"}
-: ${PUBLIC_HOSTNAME="(curl -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/hostname)"}
-
-# Azure
-#: ${PUBLIC_IPV4:="(curl -H Metadata:true 'http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2017-08-01&format=text')"}
-#: ${PRIAVTE_IPV4:="(curl -H Metadata:true 'http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2017-08-01&format=text')"}
-
-
-# Build run-time configuration
-confd -onetime -backend env -confdir=/etc/confd-env -config-file=/etc/confd-env/conf.d/kamailio.toml
+# Build local configuration
+cat <<ENDHERE >/data/kamailio/local.k
+#!define PUBLIC_IP "${PUBLIC_IPV4}"
+#!subst "/PUBLIC_IP/${PUBLIC_IPV4}/"
+#!define PRIVATE_IP "${PRIVATE_IPV4}"
+#!subst "/PRIVATE_IP/${PRIVATE_IPV4}/"
+alias=${PUBLIC_IPV4} ${PUBLIC_HOSTNAME} ${SIP_HOSTNAME}
+listen=udp:${PRIVATE_IPV4}:5060 advertise ${PUBLIC_IPV4}:5060
+listen=udp:${PRIVATE_IPV4}:5080
+ENDHERE
 
 # Runs kamaillio, while shipping stderr/stdout to logstash
 exec /usr/sbin/kamailio $KAMAILIO_ARGS $*

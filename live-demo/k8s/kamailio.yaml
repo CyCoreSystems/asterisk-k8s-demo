@@ -15,7 +15,7 @@ spec:
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: kamailio
@@ -38,12 +38,18 @@ spec:
         - name: config
       containers:
         - name: kamailio
-          image: cycoresystems/astricon-2016-kamailio:gce
+          image: cycoresystems/kamailio
+          env:
+            - name: CLOUD
+              value: gcp
           volumeMounts:
             - name: config
               mountPath: /data/kamailio
         - name: rtpproxy
-          image: cycoresystems/astricon-2016-rtpproxy:gce
+          image: cycoresystems/rtpproxy
+          env:
+            - name: CLOUD
+              value: gcp
         - name: dispatchers
           image: cycoresystems/dispatchers
           command:
