@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: gnatsd
-        image: nats:0.9.4
+        image: nats
         ports:
         - containerPort: 4222 
           name: client
@@ -51,5 +51,5 @@ spec:
           initialDelaySeconds: 15
           timeoutSeconds: 5
         resources:
-          limits:
+          requests:
             cpu: "0.1"
