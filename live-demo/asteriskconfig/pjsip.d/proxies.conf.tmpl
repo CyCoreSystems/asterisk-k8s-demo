@@ -10,14 +10,14 @@ rtp_symmetric=yes
 
 [proxies]
 type=aor
-{{range .EndpointIPs "kamailio"}}
+{{range .EndpointIPs "kamailio" "voip"}}
 contact=sip:{{.}}:5060
 {{end}}
 
 [proxies]
 type=identify
 endpoint=proxies
-{{range .EndpointIPs "kamailio"}}
+{{range .EndpointIPs "kamailio" "voip"}}
 match={{.}}
 {{end}}
 
@@ -25,7 +25,7 @@ match={{.}}
 type=acl
 deny=0.0.0.0/0.0.0.0
 permit=10.0.0.0/255.0.0.0
-{{range .EndpointIPs "kamailio"}}
+{{range .EndpointIPs "kamailio" "voip"}}
 permit={{.}}
 {{end}}
-`
+
