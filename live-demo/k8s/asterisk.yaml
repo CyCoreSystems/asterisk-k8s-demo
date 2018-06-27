@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: asterisk
+  namespace: voip
 spec:
   selector:
     component: asterisk
@@ -16,6 +17,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: asterisk
+  namespace: voip
   labels:
     component: asterisk
 spec:
@@ -28,6 +30,9 @@ spec:
       volumes:
         - name: config
           emptyDir: {}
+        - name: custom
+          secret:
+            secretName: asterisk-config
       containers:
         - name: asterisk
           image: cycoresystems/asterisk
@@ -39,6 +44,17 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/asterisk
+            - name: custom
+              mountPath: /source
+          env:
+            - name: CLOUD
+              value: gcp
+            - name: ARI_APPLICATION
+              value: demo
+            - name: ARI_USERNAME
+              value: admin
+            - name: ARI_PASSWORD
+              value: admin
         - name: natsgw
           image: cycoresystems/ari-proxy:v2.4
           env:

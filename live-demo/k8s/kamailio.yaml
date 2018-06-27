@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kamailio
+  namespace: voip
   labels:
     component: kamailio
 spec:
@@ -19,6 +20,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: kamailio
+  namespace: voip
   labels:
     component: kamailio
 spec:
@@ -32,7 +34,7 @@ spec:
         component: kamailio
     spec:
       nodeSelector:
-        cloud.google.com/gke-nodepool: pool-kamailio
+        cloud.google.com/gke-nodepool: kamailio
       hostNetwork: true
       volumes:
         - name: config
@@ -55,7 +57,7 @@ spec:
           command:
             - /app
             - "-set"
-            - default:asterisk=1
+            - voip:asterisk=1:5080
           volumeMounts:
             - name: config
               mountPath: /data/kamailio

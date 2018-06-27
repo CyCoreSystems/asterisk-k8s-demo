@@ -2,10 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: app
+  namespace: voip
   labels:
     component: app
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      component: app
   template:
     metadata:
       labels:
