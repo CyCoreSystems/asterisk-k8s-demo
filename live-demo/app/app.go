@@ -64,7 +64,7 @@ func (s *State) menu(ctx context.Context) (stateFn, error) {
 	}
 	s.tries++
 
-	ret, err := play.Prompt(ctx, s.h, nil, play.URI("sound:hello", "sound:please-enter-your", "sound:number")).Result()
+	ret, err := play.Prompt(ctx, s.h, play.URI("sound:hello", "sound:please-enter-your", "sound:number")).Result()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to play prompt")
 	}

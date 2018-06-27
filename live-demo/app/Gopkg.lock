@@ -8,8 +8,8 @@
     "ext/play",
     "rid"
   ]
-  revision = "902b7bccacb25a5ee78ba8bd51bfa03b25386dc3"
-  version = "v4.7.0"
+  revision = "5f4b1e423a9f16430faa6ed765b7c3042826857a"
+  version = "v4.7.1"
 
 [[projects]]
   name = "github.com/CyCoreSystems/ari-proxy"
@@ -19,8 +19,8 @@
     "client/cluster",
     "proxy"
   ]
-  revision = "7f1e92c0126db15e60c331ebdf8596b750d7dcaa"
-  version = "v2.4.0"
+  revision = "9c5c2dc77dbac2400150d4812942c2e25edaa12f"
+  version = "v2.4.2"
 
 [[projects]]
   name = "github.com/ericchiang/k8s"
@@ -156,6 +156,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "545f960922fd21bbba97782460ae2caf6b7b3f18ac1b195b06a41015e7aedca9"
+  inputs-digest = "ca60dd5b23e449b6727d8bd8eb1596bde1a4a79dc05a18e0b922fdd73e2f0279"
   solver-name = "gps-cdcl"
   solver-version = 1

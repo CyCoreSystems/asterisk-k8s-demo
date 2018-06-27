@@ -9,7 +9,7 @@ import (
 	"github.com/CyCoreSystems/ari-proxy/client"
 )
 
-const ariApp = "test"
+const ariApp = "demo"
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
