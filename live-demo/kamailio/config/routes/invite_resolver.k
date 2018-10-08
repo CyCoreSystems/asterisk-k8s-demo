@@ -9,6 +9,8 @@ route[INVITE_RESOLVER] {
 
    $var(disp_set) = 1;
 
+   $fs = "udp:PRIVATE_IP:5080";
+
    xlog("L_INFO", "[R-INVITE-RESOLVER:$ci] Processing dispatcher set $var(disp_set)\n");
 
    if(!ds_select_domain("$var(disp_set)", "4")) {
