@@ -173,6 +173,7 @@ func recognizeRequest(pCtx context.Context, r io.Reader) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "failed to start streaming recognition")
 	}
+   defer svc.CloseSend()
 
 	if err := svc.Send(&speechv1.StreamingRecognizeRequest{
 		StreamingRequest: &speechv1.StreamingRecognizeRequest_StreamingConfig{
