@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: audiosocket
+  namespace: voip
+  labels:
+    component: audiosocket
+spec:
+  selector:
+    component: audiosocket
+  ports:
+  - name: audiosocket
+    port: 8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiosocket
+  namespace: voip
+  labels:
+    component: audiosocket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: audiosocket
+  template:
+    metadata:
+      labels:
+        component: audiosocket
+    spec:
+      containers:
+        - name: audiosocket
+          image: cycoresystems/astricon-voice-service
+          ports:
+            - name: audiosocket
+              containerPort: 8080

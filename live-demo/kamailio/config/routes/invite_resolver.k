@@ -2,7 +2,7 @@
 route[INVITE_RESOLVER] {
 	xlog("L_DBG", "[R-INVITE-RESOLVER:$ci] Entering INVITE resolver\n");
 
-   if(!($rU =~ "^18882400309$" )) {
+   if(!($rU =~ "^18882400309$" ) && !($rU =~ "^16786084209")) {
       xlog("L_INFO", "[R-INVITE-RESOLVER:$ci] Disallowing non-local call\n");
       exit;
    }
