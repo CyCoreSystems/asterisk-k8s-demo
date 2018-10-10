@@ -119,6 +119,7 @@ func Handle(pCtx context.Context, c net.Conn) {
 	}
 
 	for ctx.Err() == nil {
+      log.Println("waiting for command")
 		resp, err := processCommand(ctx, c)
 		if err != nil {
 			log.Println("failed to process command:", err)
@@ -359,6 +360,7 @@ func processCommand(ctx context.Context, rw io.ReadWriter) (string, error) {
 		return "Good bye!", ErrHangup
 	}
 
+   log.Println("failed to parse command:", cmd)
 	return "Sorry, I don't know how to do that", nil
 }
 
