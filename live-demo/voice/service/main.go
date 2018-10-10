@@ -173,7 +173,6 @@ func recognizeRequest(pCtx context.Context, r io.Reader) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "failed to start streaming recognition")
 	}
-   defer svc.CloseSend()
 
 	if err := svc.Send(&speechv1.StreamingRecognizeRequest{
 		StreamingRequest: &speechv1.StreamingRecognizeRequest_StreamingConfig{
@@ -277,6 +276,8 @@ func scaleKamailio(count int, w io.Writer) (string, error) {
 func pipeFromAsterisk(ctx context.Context, in io.Reader, out speechv1.Speech_StreamingRecognizeClient) {
 	var err error
 	var m audiosocket.Message
+
+   defer out.CloseSend()
 
 	for ctx.Err() == nil {
 		m, err = audiosocket.NextMessage(in)
