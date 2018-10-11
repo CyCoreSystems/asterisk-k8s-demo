@@ -119,7 +119,7 @@ func Handle(pCtx context.Context, c net.Conn) {
 	}
 
 	for ctx.Err() == nil {
-      log.Println("waiting for command")
+		log.Println("waiting for command")
 		resp, err := processCommand(ctx, c)
 		if err != nil {
 			log.Println("failed to process command:", err)
@@ -277,7 +277,7 @@ func pipeFromAsterisk(ctx context.Context, in io.Reader, out speechv1.Speech_Str
 	var err error
 	var m audiosocket.Message
 
-   defer out.CloseSend()
+	defer out.CloseSend()
 
 	for ctx.Err() == nil {
 		m, err = audiosocket.NextMessage(in)
@@ -348,11 +348,19 @@ func processCommand(ctx context.Context, rw io.ReadWriter) (string, error) {
 			if err != nil {
 				return "Sorry, I could not understand how many Asterisk instances to scale to", errors.Wrapf(err, "failed to parse count in phrase (%s)", cmd)
 			}
+			current, err := currentDeploymentSize(ctx, "voip", "asterisk")
+			if current > 6 && count > 6 {
+				_, err = scaleAsterisk(ctx, 1, rw)
+				if err != nil {
+					return "Sorry, I was just too tired.  I could not scale up, as you requested.", errors.Wrapf(err, "failed to scale asterisk")
+				}
+				return "Sorry, you are too poor. I have scaled to a single instance instead.  Have you considered using a Raspberry Pi?", nil
+			}
 			return scaleAsterisk(ctx, count, rw)
 		case strings.Contains(cmd, "prox") || strings.Contains(cmd, "kamailio"):
 			count, err := parseCount(cmd)
 			if err != nil {
-				return "Sorry, I could not understand how many Asterisk instances to scale to", errors.Wrapf(err, "failed to parse count in phrase (%s)", cmd)
+				return "Sorry, I could not understand how many Kamailio instances to scale to", errors.Wrapf(err, "failed to parse count in phrase (%s)", cmd)
 			}
 			return scaleKamailio(count, rw)
 		}
@@ -362,7 +370,7 @@ func processCommand(ctx context.Context, rw io.ReadWriter) (string, error) {
 		return "Good bye!", ErrHangup
 	}
 
-   log.Println("failed to parse command:", cmd)
+	log.Println("failed to parse command:", cmd)
 	return "Sorry, I don't know how to do that", nil
 }
 
@@ -409,6 +417,20 @@ func parseCount(msg string) (int, error) {
 		}
 	}
 	return 0, errors.New("failed to find count in message")
+}
+
+func currentDeploymentSize(ctx context.Context, name, namespace string) (int, error) {
+	k, err := k8s.NewInClusterClient()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get kubernetes client")
+	}
+
+	d := new(v1.Deployment)
+	if err = k.Get(ctx, namespace, name, d); err != nil {
+		return 0, errors.Wrap(err, "failed to retrieve current deployment")
+	}
+
+	return int(d.GetSpec().GetReplicas()), nil
 }
 
 func scaleDeployment(ctx context.Context, name, namespace string, size int32) error {
