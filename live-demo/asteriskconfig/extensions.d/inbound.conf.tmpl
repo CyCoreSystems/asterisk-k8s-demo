@@ -5,11 +5,13 @@ exten = demo,1,Verbose(1, "New call")
 
 exten = voicedemo,1,Verbose(1, "New Voice Demo call")
  same = n,Answer
+ same = n,Sleep(1)
  same = n,AudioSocket(8d4dd426-cc96-11e8-8777-2c56dc387208,{{.Env "AUDIOSOCKET_SERVICE_HOST"}}:8080)
  same = n,Hangup()
 
 exten = audiosocket,1,Verbose(1, "Audiosocket Leg")
  same = n,Answer
+ same = n,Sleep(1)
  same = n,AudioSocket(${AUDIOSOCKET_ID},{{.Env "AUDIOSOCKET_SERVICE_HOST"}}:8080)
  same = n,Hangup()
 

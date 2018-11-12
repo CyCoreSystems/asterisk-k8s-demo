@@ -343,12 +343,12 @@ func processCommand(ctx context.Context, rw io.ReadWriter) (string, error) {
 	switch {
 	case strings.Contains(cmd, "scale"):
 		switch {
-		case strings.Contains(cmd, "asterisk") || strings.Contains(cmd, "astris"):
+		case strings.Contains(cmd, "asterisk") || strings.Contains(cmd, "astris") || strings.Contains(cmd, "media"):
 			count, err := parseCount(cmd)
 			if err != nil {
 				return "Sorry, I could not understand how many Asterisk instances to scale to", errors.Wrapf(err, "failed to parse count in phrase (%s)", cmd)
 			}
-			current, err := currentDeploymentSize(ctx, "voip", "asterisk")
+			current, err := currentDeploymentSize(ctx, "asterisk", "voip")
 			if current > 6 && count > 6 {
 				_, err = scaleAsterisk(ctx, 1, rw)
 				if err != nil {
