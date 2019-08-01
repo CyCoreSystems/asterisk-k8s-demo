@@ -9,7 +9,7 @@ import (
 	"github.com/CyCoreSystems/ari-proxy/client"
 )
 
-const ariApp = "demo"
+const ariApp = "test"
 
 var baseClient *client.Client
 

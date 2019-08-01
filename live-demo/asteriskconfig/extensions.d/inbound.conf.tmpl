@@ -3,6 +3,11 @@ exten = demo,1,Verbose(1, "New call")
  same = n,Stasis({{.Env "ARI_APPLICATION"}})
  same = n,Hangup()
 
+exten = echo,1,Verbose(1, "Echo test")
+ same = n,Answer
+ same = n,Echo()
+ same = n,Hangup()
+
 exten = voicedemo,1,Verbose(1, "New Voice Demo call")
  same = n,Answer
  same = n,Sleep(1)
@@ -11,8 +16,7 @@ exten = voicedemo,1,Verbose(1, "New Voice Demo call")
 
 exten = audiosocket,1,Verbose(1, "Audiosocket Leg")
  same = n,Answer
- same = n,Sleep(1)
- same = n,AudioSocket(${AUDIOSOCKET_ID},{{.Env "AUDIOSOCKET_SERVICE_HOST"}}:8080)
+ same = n,Dial(AudioSocket/{{.Env "AUDIOSOCKET_SERVICE_HOST"}}:8080/${AUDIOSOCKET_ID})
  same = n,Hangup()
 
 exten = 18882400309,1,Goto(demo,1)

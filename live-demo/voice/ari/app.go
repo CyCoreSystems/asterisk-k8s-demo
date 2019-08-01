@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"sync"
+	"os"
 	"time"
 
 	"github.com/CyCoreSystems/ari"
@@ -12,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const audiosocketEndpoint = "Local/audiosocket@default/n"
+const audiosocketEndpoint = "AudioSocket/%s:8080/%s"
 
 // LocalChannelAnswerTimeout is the maximum time to wait for a local channel to be answered
 var LocalChannelAnswerTimeout = time.Second
@@ -25,6 +26,12 @@ type State struct {
 }
 
 type stateFn func(context.Context) (stateFn, error)
+
+func init() {
+	if os.Getenv("AUDIOSOCKET_SERVICE_HOST") == "" {
+		os.Setenv("AUDIOSOCKET_SERVICE_HOST", "localhost")
+	}
+}
 
 func app(ctx context.Context, ac ari.Client, h *ari.ChannelHandle) error {
 	log.Println("running voice app")
@@ -45,7 +52,7 @@ func app(ctx context.Context, ac ari.Client, h *ari.ChannelHandle) error {
 	id := uuid.Must(uuid.NewV1())
 
 	// Bridge to voice app (via AudioSocket)
-	br, err := ac.Bridge().StageCreate(h.Key(), "mixing", id.String())
+	br, err := ac.Bridge().Create(h.Key(), "mixing", "bridge-"+id.String())
 	if err != nil {
 		return errors.Wrap(err, "failed to stage bridge creation")
 	}
@@ -54,98 +61,69 @@ func app(ctx context.Context, ac ari.Client, h *ari.ChannelHandle) error {
 
 	brEvents := m.Watch()
 
-	if err := br.Exec(); err != nil {
-		return errors.Wrap(err, "failed to create bridge")
-	}
-	legAID := "a-" + id.String()
-	legBID := "b-" + id.String()
-
-	// Create local channel pair for AudioSocket connection
-	legA, err := ac.Channel().StageOriginate(h.Key(), ari.OriginateRequest{
-		Endpoint:       audiosocketEndpoint,
-		ChannelID:      legAID,
-		OtherChannelID: legBID,
-		App:            ac.ApplicationName(),
-		AppArgs:        "noop",
-		Originator:     h.ID(),
-		Variables: map[string]string{
-			"AUDIOSOCKET_ID": id.String(),
-		},
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to stage local channel creation")
-	}
-	legB := ari.NewChannelHandle(legA.Key().New(ari.ChannelKey, legBID), ac.Channel(), nil)
-
-	wg := new(sync.WaitGroup)
-
-	wg.Add(1)
-	go func() {
-		legAStart := legA.Subscribe(ari.Events.StasisStart)
-		defer legAStart.Cancel()
-		wg.Done()
-
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(LocalChannelAnswerTimeout):
-			return
-		case <-legAStart.Events():
-			break
-		}
-
-		// Send LegA to the bridge
-		if err := br.AddChannel(legAID); err != nil {
-			log.Println("failed to send legA to brige:", err)
-			return
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		legBStart := legB.Subscribe(ari.Events.StasisStart)
-		defer legBStart.Cancel()
-
-		wg.Done()
-
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(LocalChannelAnswerTimeout):
-			return
-		case <-legBStart.Events():
-		}
-
-		// Send LegB to the AudioSocket
-		if err := legB.Continue("inbound", "audiosocket", 1); err != nil {
-			log.Println("failed to send legB to AudioSocket:", err)
-			return
-		}
-	}()
-
-	if err := legA.Exec(); err != nil {
-		return errors.Wrap(err, "failed to create local channel pair")
-	}
-
-	// Add our original channel to the bridge
 	if err := br.AddChannel(h.ID()); err != nil {
 		return errors.Wrap(err, "failed to add original channel to bridge")
 	}
 	defer br.RemoveChannel(h.ID()) // nolint
 
+	// Create an AudioSocket channel
+	as, err := ac.Channel().StageOriginate(h.Key(), ari.OriginateRequest{
+		Endpoint:   fmt.Sprintf(audiosocketEndpoint, os.Getenv("AUDIOSOCKET_SERVICE_HOST"), id.String()),
+		ChannelID:  id.String(),
+		App:        ac.ApplicationName(),
+		AppArgs:    "noop",
+		Originator: h.ID(),
+		Variables: map[string]string{
+			"AUDIOSOCKET_ID": id.String(),
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to stage AudioSocket channel creation")
+	}
+
+	asStart := as.Subscribe(ari.Events.StasisStart)
+	go func() {
+		defer asStart.Cancel()
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(LocalChannelAnswerTimeout):
+			return
+		case <-asStart.Events():
+			break
+		}
+
+		// Send AudioSocket channel to the bridge
+		if err := br.AddChannel(as.ID()); err != nil {
+			log.Println("failed to send AudioSocket channel to bridge:", err)
+			return
+		}
+	}()
+
+	if err := as.Exec(); err != nil {
+		return errors.Wrap(err, "failed to create AudioSocket channel")
+	}
+	defer as.Hangup() // nolint: errcheck
+
 	// Wait for the bridge to be left
+	log.Println("waiting for bridge quorum")
 	var hadQuorum bool
 	for {
 		select {
 		case <-ctx.Done():
+			log.Println("context terminated")
 			return nil
 		case data := <-brEvents:
 			if len(data.ChannelIDs) > 1 {
+				log.Println("bridge quorum achieved")
 				hadQuorum = true
 			}
 			if len(data.ChannelIDs) < 2 && hadQuorum {
+				log.Println("channel left bridge; exiting")
 				return nil
 			}
+			log.Printf("odd bridge state with %d members", len(data.ChannelIDs))
 		}
 	}
 }

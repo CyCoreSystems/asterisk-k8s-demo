@@ -26,10 +26,8 @@ fi
 
 # Build local configuration
 cat <<ENDHERE >/data/kamailio/local.k
-#!define PUBLIC_IP "${PUBLIC_IPV4}"
-#!subst "/PUBLIC_IP/${PUBLIC_IPV4}/"
-#!define PRIVATE_IP "${PRIVATE_IPV4}"
-#!subst "/PRIVATE_IP/${PRIVATE_IPV4}/"
+#!substdef "/PUBLIC_IP/${PUBLIC_IPV4}/"
+#!substdef "/PRIVATE_IP/${PRIVATE_IPV4}/"
 alias=${PUBLIC_IPV4} ${PUBLIC_HOSTNAME} ${SIP_HOSTNAME}
 listen=udp:${PRIVATE_IPV4}:5060 advertise ${PUBLIC_IPV4}:5060
 listen=udp:${PRIVATE_IPV4}:5080
