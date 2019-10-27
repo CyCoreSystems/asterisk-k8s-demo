@@ -9,7 +9,7 @@ if [ $# -gt 0 ]; then
    exec "$@"
 fi
 
-if [ ! -e /etc/asterisk/manager.conf ]; then
+if [ ! -e /etc/asterisk/ari.d/k8s-asterisk-config.conf ]; then
    echo "configuration not available"
    exit 1
 fi

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voice-transscriber
+  namespace: voip
+  labels:
+    component: voice-transscriber
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: voice-transscriber
+  template:
+    metadata:
+      labels:
+        component: voice-transscriber
+    spec:
+      containers:
+        - name: app
+          image: cycoresystems/asterisk-demo-voice-transscriber
+          ports:
+            - name: audiosocket
+              containerPort: 8080
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: voice-transscriber
+  namespace: voip
+  labels:
+    component: voice-transscriber
+spec:
+  selector:
+    component: voice-transscriber
+  ports:
+  - name: voice-transscriber
+    port: 8080
+

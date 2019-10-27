@@ -9,6 +9,7 @@ require (
 	github.com/CyCoreSystems/ari-proxy v0.0.0-20190708005332-45b9a6d646d5
 	github.com/CyCoreSystems/audiosocket v0.1.0
 	github.com/ericchiang/k8s v1.2.0
+	github.com/fatih/color v1.7.0
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/gogo/protobuf v1.2.1 // indirect
