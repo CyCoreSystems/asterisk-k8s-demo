@@ -26,6 +26,7 @@ type App struct {
 	id uuid.UUID
 }
 
+// Run executes the application set state machine
 func (a *App) Run(ctx context.Context) (err error) {
 	for next := a.rootMenu; next != nil; {
 		if ctx.Err() != nil {
@@ -53,6 +54,9 @@ func (a *App) rootMenu(ctx context.Context) (stateFn, error) {
 	}
 	if containsAny(cmd, "laugh", "joke") {
 		return a.tellJoke, nil
+	}
+	if containsAny(cmd, "echo") {
+		return a.echoStart, nil
 	}
 	if containsAny(cmd, "bye", "hangup", "hang up") {
 		return nil, ErrHangup
