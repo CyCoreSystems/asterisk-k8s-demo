@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io"
 	"log"
 	"net"
 	"os"
@@ -26,10 +25,6 @@ const MaxRecognitionDuration = time.Minute
 const listenAddr = ":8080"
 const languageCode = "en-US"
 
-const greetingMessage = "Hello. Speak, and I will listen to you."
-const partingMessage = "Good bye. Thanks for calling."
-const timeoutMessage = "Sorry, your time is up."
-
 // slinChunkSize is the number of bytes which should be sent per Slin
 // audiosocket message.  Larger data will be chunked into this size for
 // transmission of the AudioSocket.
@@ -43,12 +38,6 @@ var ErrHangup = errors.New("Hangup")
 var recog *speech.Client
 var tts *texttospeech.Client
 var googleCreds = "/var/secrets/google/google.json"
-
-var keyPhrases = []string{
-	"bye",
-	"goodbye",
-	"hangup",
-}
 
 func main() {
 	var err error
@@ -100,16 +89,15 @@ func Handle(pCtx context.Context, c net.Conn) {
 	ctx, cancel := context.WithTimeout(pCtx, MaxCallDuration)
 
 	defer func() {
-		if err := speak(ctx, c, partingMessage); err != nil {
-			log.Println("failed to speak closing:", err)
-		}
+		color.Magenta("ending call %s", id.String())
+
+		// Tell caller good-bye
+		speak(ctx, c, partingMessage) // nolint: errcheck
+
+		// Tell AudioSocket to shut down, if it is still up
+		c.Write(audiosocket.HangupMessage()) // nolint: errcheck
 
 		cancel()
-
-		color.Magenta("ending call %s", id.String())
-		if _, err := c.Write(audiosocket.HangupMessage()); err != nil {
-			log.Println("failed to send hangup message:", err)
-		}
 	}()
 
 	id, err = getCallID(c)
@@ -119,46 +107,18 @@ func Handle(pCtx context.Context, c net.Conn) {
 	}
 	color.Magenta("processing call %s", id.String())
 
-	if err = speak(ctx, c, greetingMessage); err != nil {
-		log.Println("failed to send greeting to Asterisk:", err)
+	a := &App{
+		c:  c,
+		id: id,
 	}
-
-	for ctx.Err() == nil {
-		resp, err := processCommand(ctx, c)
+	if err := a.Run(ctx); err != nil {
 		if err == ErrHangup {
 			return
 		}
-		if err != nil {
-			log.Println("failed to process command:", err)
-		}
-		if resp != "" {
-			if err := speak(ctx, c, resp); err != nil {
-				log.Println("failed to speak response:", err)
-			}
-		}
-		if err != nil {
+		if ctx.Err() != nil {
 			return
 		}
+		log.Println(err)
 	}
-
-	if err = speak(ctx, c, timeoutMessage); err != nil {
-		log.Println("failed to send timeout message to Asterisk:", err)
-	}
-}
-
-func processCommand(ctx context.Context, rw io.ReadWriter) (string, error) {
-	cmd, err := recognizeRequest(ctx, rw)
-	if err != nil {
-		return "Sorry, I failed to listen to you", errors.Wrap(err, "failed to recognize request")
-	}
-	color.Green(cmd)
-
-	if containsAny(cmd, "laugh", "joke") {
-		return "ha ha ha", nil
-	}
-	if containsAny(cmd, "bye", "goodbye", "hangup", "hang up") {
-		return "", ErrHangup
-	}
-
-	return "", nil
+	return
 }

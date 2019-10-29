@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/CyCoreSystems/audiosocket"
+	"github.com/fatih/color"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -75,7 +76,7 @@ func recognizeRequest(pCtx context.Context, r io.Reader) (string, error) {
 		return "", errors.Wrap(err, "failed to send recognition config")
 	}
 
-	go pipeFromAsterisk(ctx, r, svc)
+	go pipeFromAsterisk(ctx, cancel, r, svc)
 
 	resp, err := svc.Recv()
 	if err == io.EOF {
@@ -94,6 +95,7 @@ func recognizeRequest(pCtx context.Context, r io.Reader) (string, error) {
 	for _, result := range resp.Results {
 		for _, alt := range result.GetAlternatives() {
 			if alt.Transcript != "" {
+				color.Green(alt.Transcript)
 				return alt.Transcript, nil
 			}
 		}
@@ -101,11 +103,12 @@ func recognizeRequest(pCtx context.Context, r io.Reader) (string, error) {
 	return "", nil
 }
 
-func pipeFromAsterisk(ctx context.Context, in io.Reader, out speechv1.Speech_StreamingRecognizeClient) {
+func pipeFromAsterisk(ctx context.Context, cancel context.CancelFunc, in io.Reader, out speechv1.Speech_StreamingRecognizeClient) {
 	var err error
 	var m audiosocket.Message
 
 	defer out.CloseSend() // nolint: errcheck
+	defer cancel()
 
 	for ctx.Err() == nil {
 		m, err = audiosocket.NextMessage(in)
