@@ -17,7 +17,7 @@ import (
 )
 
 // MaxCallDuration is the maximum amount of time to allow a call to be up before it is terminated.
-const MaxCallDuration = 2 * time.Minute
+const MaxCallDuration = 5 * time.Minute
 
 // MaxRecognitionDuration is the maximum amount of time to allow for a single voice recognition session to complete
 const MaxRecognitionDuration = time.Minute
