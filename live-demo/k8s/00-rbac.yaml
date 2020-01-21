@@ -5,7 +5,7 @@ metadata:
   namespace: voip
 rules:
   - apiGroups: [""] # "" indicates the core API group
-    resources: ["pods","endpoints","services"]
+    resources: ["pods","endpoints","services","nodes"]
     verbs: ["get", "watch", "list"]
   - apiGroups: ["apps"]
     resources: ["deployments"]
