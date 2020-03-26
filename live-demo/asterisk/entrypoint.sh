@@ -3,7 +3,7 @@ set -e
 
 # Default values
 : ${ASTERISK_ARGS:="-fp"}
-: ${CHECK_FILE:="ari.d/k8s-asterisk-config.conf"}
+: ${CHECK_FILE:=".asterisk-config"}
 
 # If we were given arguments, run them instead
 if [ $# -gt 0 ]; then

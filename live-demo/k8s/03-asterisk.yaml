@@ -45,7 +45,7 @@ spec:
             - name: config
               mountPath: /etc/asterisk
         - name: config
-          image: cycoresystems/asterisk-config:v0.7.2
+          image: cycoresystems/asterisk-config:v0.8.0
           volumeMounts:
             - name: config
               mountPath: /etc/asterisk
@@ -61,7 +61,7 @@ spec:
             - name: ARI_PASSWORD
               value: admin
         - name: natsgw
-          image: cycoresystems/ari-proxy:v3.0.0-pre5
+          image: cycoresystems/ari-proxy:v5.0.1
           env:
             - name: NATS_URI
               value: nats://nats:4222

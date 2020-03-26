@@ -6,7 +6,7 @@
 FROM debian:stretch as builder
 MAINTAINER Seán C McCord "ulexus@gmail.com"
 
-ENV ASTERISK_VER 17.0.0
+ENV ASTERISK_VER 17.3.0
 
 # Install Asterisk
 RUN apt-get update && \
