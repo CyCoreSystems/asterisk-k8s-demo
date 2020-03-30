@@ -45,7 +45,7 @@ spec:
             - name: config
               mountPath: /etc/asterisk
         - name: config
-          image: cycoresystems/asterisk-config:v0.8.0
+          image: cycoresystems/asterisk-config:v0.9.1
           volumeMounts:
             - name: config
               mountPath: /etc/asterisk
