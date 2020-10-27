@@ -10,11 +10,10 @@ if [ $# -gt 0 ]; then
    exec "$@"
 fi
 
-if [ ! -e "/etc/asterisk/$CHECK_FILE" ]; then
-   echo "configuration not yet available"
-   exit 1
-fi
-
+while [ ! -e "/etc/asterisk/$CHECK_FILE" ]; do
+    echo "configuration not yet available, sleep 5 seconds..."
+    sleep 5
+done
 
 # Run Asterisk
 exec /usr/sbin/asterisk ${ASTERISK_ARGS}
