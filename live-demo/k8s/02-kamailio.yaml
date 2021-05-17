@@ -47,8 +47,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /data/kamailio
-        - name: rtpproxy
-          image: cycoresystems/rtpproxy
+        - name: rtpengine
+          image: cycoresystems/rtpengine:20210516
           env:
             - name: CLOUD
               value: gcp

@@ -1,6 +1,6 @@
 route[INVITE_POSTROUTE] {
 
-   rtpproxy_manage();
+   rtpengine_manage();
 
 	t_on_reply("MAIN_REPLY");
 

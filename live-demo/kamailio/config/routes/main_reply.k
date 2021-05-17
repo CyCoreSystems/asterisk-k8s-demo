@@ -11,5 +11,5 @@ onreply_route[MAIN_REPLY] {
       fix_nated_contact();
    }
 
-   rtpproxy_manage();
+   rtpengine_manage();
 }

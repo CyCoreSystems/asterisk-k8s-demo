@@ -7,6 +7,7 @@ set -e
 # Default values
 : ${PID_FILE:="/var/run/kamailio.pid"}
 : ${KAMAILIO_ARGS:="-DD -E -f /etc/kamailio/kamailio.cfg -P ${PID_FILE}"}
+: ${RTPENGINE_SOCK:="ws:127.0.0.1:3000"}
 
 # confd requires that these variables actually be exported
 export PID_FILE
@@ -26,6 +27,7 @@ fi
 
 # Build local configuration
 cat <<ENDHERE >/data/kamailio/local.k
+#!substdef "/RTPENGINE_SOCK/${RTPENGINE_SOCK}/"
 #!substdef "/PUBLIC_IP/${PUBLIC_IPV4}/"
 #!substdef "/PRIVATE_IP/${PRIVATE_IPV4}/"
 alias=${PUBLIC_IPV4} ${PUBLIC_HOSTNAME} ${SIP_HOSTNAME}

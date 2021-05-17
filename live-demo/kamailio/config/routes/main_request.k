@@ -18,7 +18,7 @@ route {
 	
 		if(loose_route()) {
 			if(is_method("BYE")) {
-            rtpproxy_manage();
+            rtpengine_manage();
 				xlog("L_INFO", 
 				     "[R-MAIN:$ci] -> "
 				     "BYE (hangup) received from $si:$sp\n");
@@ -34,7 +34,7 @@ route {
 
 
 			if(!t_relay()) {
-            rtpproxy_manage();
+            rtpengine_manage();
 				sl_reply_error();
          }
 	
@@ -44,7 +44,7 @@ route {
 		else {
 			# Request is not loose-routed, but has a To-tag;
 			if(is_method("ACK")) {
-            rtpproxy_manage();
+            rtpengine_manage();
 				if(t_check_trans()) 
 					t_relay();
 
@@ -62,7 +62,7 @@ route {
 
 	if(is_method("CANCEL")) {
 
-      rtpproxy_manage();
+      rtpengine_manage();
 
 		xlog("L_INFO", 
 			"[R-MAIN:$ci] CANCEL received from $si (RURI=$ru)\n");

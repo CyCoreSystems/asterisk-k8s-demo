@@ -1,3 +1,11 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: voip
+  namespace: voip
+
+---
+
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -6,7 +14,7 @@ metadata:
 rules:
   - apiGroups: [""] # "" indicates the core API group
     resources: ["pods","endpoints","services","nodes"]
-    verbs: ["get", "watch", "list"]
+    verbs: ["get", "watch", "list", "update", "patch"]
   - apiGroups: ["apps"]
     resources: ["deployments"]
     verbs: ["get", "watch", "list", "update", "patch"]
@@ -22,7 +30,36 @@ subjects:
   - kind: User
     name: system:serviceaccount:voip:default
     apiGroup: rbac.authorization.k8s.io
+  - kind: ServiceAccount
+    name: voip
+    namespace: voip
 roleRef:
   kind: Role
+  name: voip-manager
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: voip-manager
+rules:
+  - apiGroups: [""] # "" indicates the core API group
+    resources: ["nodes"]
+    verbs: ["get", "watch", "list", "update", "patch"]
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: voip-manager
+subjects:
+  - kind: ServiceAccount
+    name: voip
+    namespace: voip
+roleRef:
+  kind: ClusterRole
   name: voip-manager
   apiGroup: rbac.authorization.k8s.io

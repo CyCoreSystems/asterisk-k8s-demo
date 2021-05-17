@@ -30,7 +30,7 @@ loadmodule "sdpops"
 loadmodule "dialog"
 #!endif
 
-loadmodule "rtpproxy"
+loadmodule "rtpengine"
 loadmodule "rtimer"
 loadmodule "utils"
 
@@ -49,6 +49,6 @@ include_file "module_cfg/permissions.k"
 include_file "module_cfg/nathelper.k"
 include_file "module_cfg/dispatcher.k"
 
-include_file "module_cfg/rtpproxy.k"
+include_file "module_cfg/rtpengine.k"
 include_file "module_cfg/rtimer.k"
 include_file "module_cfg/utils.k"
