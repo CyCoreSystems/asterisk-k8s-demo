@@ -51,7 +51,7 @@ spec:
             - name: CLOUD
               value: gcp
         - name: dispatchers
-          image: cycoresystems/dispatchers:20210609
+          image: cycoresystems/dispatchers:v2.1.0
           args:
             - "-set"
             - voip:asterisk=1:5080
