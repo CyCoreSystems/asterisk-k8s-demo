@@ -33,8 +33,6 @@ spec:
       labels:
         component: kamailio
     spec:
-      nodeSelector:
-        cloud.google.com/gke-nodepool: kamailio
       hostNetwork: true
       volumes:
         - name: config
@@ -53,9 +51,8 @@ spec:
             - name: CLOUD
               value: gcp
         - name: dispatchers
-          image: cycoresystems/dispatchers
-          command:
-            - /app
+          image: cycoresystems/dispatchers:20210609
+          args:
             - "-set"
             - voip:asterisk=1:5080
           volumeMounts:
