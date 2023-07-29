@@ -54,8 +54,7 @@ spec:
               value: gcp
         - name: dispatchers
           image: cycoresystems/dispatchers
-          command:
-            - /app
+          args:
             - "-set"
             - voip:asterisk=1:5080
           volumeMounts:
